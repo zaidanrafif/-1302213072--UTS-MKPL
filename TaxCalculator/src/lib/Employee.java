@@ -17,13 +17,9 @@ public class Employee {
     private String idNumber;
     private String address;
 
-    private int yearJoined;
-    private int monthJoined;
-    private int dayJoined;
-    private int monthWorkingInYear;
-
-    private boolean isForeigner;
-    private boolean gender;
+    private LocalDate dateJoined;
+    private boolean isForeign;
+    private boolean isMale;
 
     private int monthlySalary;
     private int otherMonthlyIncome;
@@ -35,17 +31,15 @@ public class Employee {
     private List<String> childNames;
     private List<String> childIdNumbers;
 
-    public Employee(String employeeId, String firstName, String lastName, String idNumber, String address, int yearJoined, int monthJoined, int dayJoined, boolean isForeigner, boolean gender) {
+    public Employee(String employeeId, String firstName, String lastName, String idNumber, String address, LocalDate dateJoined, boolean isForeign, boolean isMale) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.idNumber = idNumber;
         this.address = address;
-        this.yearJoined = yearJoined;
-        this.monthJoined = monthJoined;
-        this.dayJoined = dayJoined;
-        this.isForeigner = isForeigner;
-        this.gender = gender;
+        this.dateJoined = dateJoined;
+        this.isForeign = isForeign;
+        this.isMale = isMale;
 
         childNames = new LinkedList<>();
         childIdNumbers = new LinkedList<>();
@@ -54,13 +48,13 @@ public class Employee {
     public void setMonthlySalary(int grade) {
         switch (grade) {
             case 1:
-                monthlySalary = (int) (GRADE_1_SALARY * (isForeigner ? FOREIGNER_SURCHARGE : 1));
+                monthlySalary = (int) (GRADE_1_SALARY * (isForeign ? FOREIGNER_SURCHARGE : 1));
                 break;
             case 2:
-                monthlySalary = (int) (GRADE_2_SALARY * (isForeigner ? FOREIGNER_SURCHARGE : 1));
+                monthlySalary = (int) (GRADE_2_SALARY * (isForeign ? FOREIGNER_SURCHARGE : 1));
                 break;
             case 3:
-                monthlySalary = (int) (GRADE_3_SALARY * (isForeigner ? FOREIGNER_SURCHARGE : 1));
+                monthlySalary = (int) (GRADE_3_SALARY * (isForeign ? FOREIGNER_SURCHARGE : 1));
                 break;
             default:
                 throw new IllegalArgumentException("Invalid grade");
@@ -86,12 +80,16 @@ public class Employee {
     }
 
     public int getAnnualIncomeTax() {
-        calculateMonthWorkingInYear();
-        return TaxFunction.calculateTax(monthlySalary, otherMonthlyIncome, monthWorkingInYear, annualDeductible, spouseIdNumber.equals(""), childIdNumbers.size());
+        int monthsWorked = calculateMonthWorkingInYear();
+        return TaxFunction.calculateTax(monthlySalary, otherMonthlyIncome, monthsWorked, annualDeductible, spouseIdNumber.equals(""), childIdNumbers.size());
     }
 
-    private void calculateMonthWorkingInYear() {
-        LocalDate date = LocalDate.now();
-        monthWorkingInYear = (date.getYear() == yearJoined) ? date.getMonthValue() - monthJoined : 12;
+    private int calculateMonthWorkingInYear() {
+        LocalDate currentDate = LocalDate.now();
+        int months = 12;
+        if (currentDate.getYear() == dateJoined.getYear()) {
+            months = currentDate.getMonthValue() - dateJoined.getMonthValue() + 1;
+        }
+        return months;
     }
 }
